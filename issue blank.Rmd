@@ -1,0 +1,59 @@
+---
+title: "issue"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+
+```{r, eval=FALSE}
+
+library(bbsBayes2)
+library(patchwork)
+library(tidyverse)
+
+
+# fitting example models --------------------------------------------------
+
+
+species <- "Carolina Wren"
+
+stratification <- "bbs_cws"
+
+model = "gamye"
+
+model_variant <- "spatial"
+
+
+s <- stratify(by = stratification,
+              species = species)
+
+
+p <- prepare_data(s)
+
+ps <- prepare_spatial(p,
+                      strata_map = load_map(stratification))
+
+print(ps$spatial_data$map)
+
+pm <- prepare_model(ps,
+                    model = model,
+                    model_variant = model_variant)
+fit <- run_model(pm,
+                 refresh = 200,
+                 adapt_delta = 0.8)
+```
+
+The colour scale in the trend maps needs to be anchored at particular values. So that colours are consistent across maps and species. Also, so that the red-yellow-blue colours consistently reflect decreases-stable-increases, respectively. 
+
+```{r}
+fit <- readRDS("BBS_STAN_gamye_spatial_2023-01-19.rds")
+
+indices_smooth <- generate_indices(fit,
+                            regions = c("continent","stratum"),
+                            alternate_n = "n_smooth")
+
+trends = generate_trends(indices_smooth,
+                         prob_decrease = c(1,30,50))
+
+```
+
