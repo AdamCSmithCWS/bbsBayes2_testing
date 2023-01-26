@@ -6,8 +6,12 @@ library(tidyverse)
 setwd("C:/Users/SmithAC/Documents/GitHub/bbsBayes2_testing")
 # fitting example models --------------------------------------------------
 
+start_year <- NULL
 
+species <- "Yellow-headed Blackbird"
 species <- "Barn Swallow"
+
+sp_aou <- bbsBayes2::search_species(species)$aou
 
 stratification <- "latlong"
 
@@ -15,16 +19,26 @@ model = "gamye"
 
 model_variant <- "spatial"
 
-
+if(stratification == "latlong"){
+  nrts <- 1
+}else{
+  nrts <- 3
+}
 s <- stratify(by = stratification,
               species = species)
 
 
-p <- prepare_data(s)
+p <- prepare_data(s,
+                  min_year = start_year,
+                  min_max_route_years = 2,
+                  min_n_routes = nrts)
 
-ps <- prepare_spatial(p,
+if(model_variant == "spatial"){
+  ps <- prepare_spatial(p,
                       strata_map = load_map(stratification))
-
+}else{
+  ps <- p
+}
 
 pm <- prepare_model(ps,
                     model = model,
@@ -34,9 +48,10 @@ fit <- run_model(pm,
                  refresh = 200,
                  adapt_delta = 0.8,
                  output_dir = "output",
-                 output_basename = paste("Barn_Swallow",stratification,model,model_variant,sep = "_"))
+                 output_basename = paste(sp_aou,stratification,model,model_variant,sep = "_"))
 
-#fit <- readRDS("BBS_STAN_gamye_spatial_2023-01-19.rds")
+#fit <- readRDS(paste0("output/",paste("Barn_Swallow",stratification,model,model_variant,sep = "_"),".rds"))
+
 
 indices <- generate_indices(fit,
                             regions = c("continent","stratum"))
@@ -46,11 +61,11 @@ indices_smooth <- generate_indices(fit,
                             alternate_n = "n_smooth")
 
 trends = generate_trends(indices_smooth,
-                         prob_decrease = c(1,30,50))
+                         prob_decrease = c(0,30,50))
 
 trends_slope = generate_trends(indices,
-                         prob_decrease = c(1,30,50),
-                         prob_increase = c(1,200),
+                         prob_decrease = c(0,30,50),
+                         prob_increase = c(0,100),
                          slope = TRUE)
 
 
