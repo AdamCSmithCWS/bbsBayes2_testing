@@ -8,16 +8,18 @@ setwd("C:/Users/SmithAC/Documents/GitHub/bbsBayes2_testing")
 
 start_year <- NULL
 
-species <- "Yellow-headed Blackbird"
-species <- "Barn Swallow"
+species_list <- c("Brown-headed Nuthatch","Cactus Wren")
+model_list <- c("gamye","first_diff")
+
+
 
 sp_aou <- bbsBayes2::search_species(species)$aou
 
 stratification <- "latlong"
 
-model = "gamye"
 
 model_variant <- "spatial"
+
 
 if(stratification == "latlong"){
   nrts <- 1
@@ -49,6 +51,8 @@ fit <- run_model(pm,
                  adapt_delta = 0.8,
                  output_dir = "output",
                  output_basename = paste(sp_aou,stratification,model,model_variant,sep = "_"))
+
+
 
 #fit <- readRDS(paste0("output/",paste("Barn_Swallow",stratification,model,model_variant,sep = "_"),".rds"))
 
